@@ -1,5 +1,5 @@
 from miscc.config import cfg, cfg_from_file
-from __future__ import print_function
+#from __future__ import print_function
 import torch
 import torchvision.transforms as transforms
 
@@ -12,6 +12,11 @@ import datetime
 import dateutil.tz
 import time
 import pickle
+
+#
+from trainer import FineGAN_evaluator as evaluator
+from datasets import Dataset
+from trainer import FineGAN_trainer as trainer
 
 dir_path = (os.path.abspath(os.path.join(os.path.realpath(__file__), './.')))
 sys.path.append(dir_path)
@@ -60,7 +65,6 @@ if __name__ == "__main__":
 
     # Evaluation part
     if not cfg.TRAIN.FLAG:
-        from trainer import FineGAN_evaluator as evaluator
         algo = evaluator()
         algo.evaluate_finegan()
 
@@ -87,7 +91,6 @@ if __name__ == "__main__":
             transforms.RandomCrop(imsize),
             transforms.RandomHorizontalFlip()])
 
-        from datasets import Dataset
         dataset = Dataset(cfg.DATA_DIR,
                           base_size=cfg.TREE.BASE_SIZE,
                           transform=image_transform)
@@ -97,7 +100,6 @@ if __name__ == "__main__":
             dataset, batch_size=cfg.TRAIN.BATCH_SIZE * num_gpu,
             drop_last=True, shuffle=bshuffle, num_workers=int(cfg.WORKERS))
 
-        from trainer import FineGAN_trainer as trainer
         algo = trainer(output_dir, dataloader, imsize)
 
         start_t = time.time()
