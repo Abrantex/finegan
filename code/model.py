@@ -37,7 +37,7 @@ def child_to_parent(child_c_code, classes_child, classes_parent):
     arg_parent = torch.argmax(child_c_code,  dim=1) / ratio
     parent_c_code = torch.zeros([child_c_code.size(0), classes_parent]).cuda()
     for i in range(child_c_code.size(0)):
-        parent_c_code[i][arg_parent[i]] = 1
+        parent_c_code[i][int(arg_parent[i])] = 1
     return parent_c_code
 
 
@@ -240,8 +240,7 @@ class G_NET(nn.Module):
 
         if cfg.TIED_CODES:
             # Obtaining the parent code from child code
-            p_code = child_to_parent(
-                c_code, cfg.FINE_GRAINED_CATEGORIES, cfg.SUPER_CATEGORIES)
+            p_code = child_to_parent(c_code, cfg.FINE_GRAINED_CATEGORIES, cfg.SUPER_CATEGORIES)
             bg_code = c_code
 
         # Background stage

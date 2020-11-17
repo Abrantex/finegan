@@ -156,7 +156,7 @@ class Dataset(data.Dataset):
         print('Total filenames: ', len(filenames), filenames[0])
         filename_bbox = {img_file[:-4]: [] for img_file in filenames}
         numImgs = len(filenames)
-        for i in xrange(0, numImgs):
+        for i in range(0, numImgs):
             bbox = df_bounding_boxes.iloc[i][1:].tolist()
             key = filenames[i][:-4]
             filename_bbox[key] = bbox
