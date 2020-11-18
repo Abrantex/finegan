@@ -16,8 +16,8 @@ TRAIN:
     FLAG: True
     NET_G: ''  # Specify the generator path to resume training
     NET_D: ''  # Specify the discriminator path to resume training
-    BATCH_SIZE: 16
-    MAX_EPOCH: 600
+    BATCH_SIZE: 3
+    MAX_EPOCH: 1
     HARDNEG_MAX_ITER: 1500
     SNAPSHOT_INTERVAL: 4000
     SNAPSHOT_INTERVAL_HARDNEG: 500

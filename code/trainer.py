@@ -33,7 +33,7 @@ def child_to_parent(child_c_code, classes_child, classes_parent):
     arg_parent = torch.argmax(child_c_code,  dim=1) / ratio
     parent_c_code = torch.zeros([child_c_code.size(0), classes_parent]).cuda()
     for i in range(child_c_code.size(0)):
-        parent_c_code[i][arg_parent[i]] = 1
+        parent_c_code[i][int(arg_parent[i])] = 1
     return parent_c_code
 
 
@@ -321,16 +321,17 @@ class FineGAN_trainer(object):
                 errD.backward()
                 optD.step()
 
+            '''
             if (flag == 0):
-                summary_D = summary.scalar('D_loss%d' % idx, errD.data[0])
+                summary_D = summary.scalar('D_loss%d' % idx, errD.data[0].item())
                 self.summary_writer.add_summary(summary_D, count)
                 summary_D_real = summary.scalar(
-                    'D_loss_real_%d' % idx, errD_real.data[0])
+                    'D_loss_real_%d' % idx, errD_real.data[0].item())
                 self.summary_writer.add_summary(summary_D_real, count)
                 summary_D_fake = summary.scalar(
-                    'D_loss_fake_%d' % idx, errD_fake.data[0])
+                    'D_loss_fake_%d' % idx, errD_fake.data[0].item())
                 self.summary_writer.add_summary(summary_D_fake, count)
-
+            '''
             return errD
 
     def train_Gnet(self, count):
@@ -375,6 +376,7 @@ class FineGAN_trainer(object):
             if(i > 0):
                 errG_total = errG_total + errG_info
 
+            '''
             if flag == 0:
                 if i > 0:
                     summary_D_class = summary.scalar(
@@ -384,7 +386,7 @@ class FineGAN_trainer(object):
                 if i == 0 or i == 2:
                     summary_D = summary.scalar('G_loss%d' % i, errG.data[0])
                     self.summary_writer.add_summary(summary_D, count)
-
+            '''
         errG_total.backward()
         for myit in range(len(self.netsD)):
             self.optimizerG[myit].step()
@@ -437,7 +439,7 @@ class FineGAN_trainer(object):
 
         for epoch in range(start_epoch, self.max_epoch):
             start_t = time.time()
-
+            print("starting epoch", epoch)
             #if torch.cuda.is_available():
             for step, data in enumerate(self.data_loader, 0):
 
@@ -471,7 +473,7 @@ class FineGAN_trainer(object):
                 if count % cfg.TRAIN.SNAPSHOT_INTERVAL == 0:
                     backup_para = copy_G_params(self.netG)
                     save_model(self.netG, avg_param_G,
-                               self.netsD, count, self.model_dir)
+                            self.netsD, count, self.model_dir)
                     # Save images
                     load_params(self.netG, avg_param_G)
                     self.netG.eval()
@@ -479,21 +481,25 @@ class FineGAN_trainer(object):
                         self.fake_imgs, self.fg_imgs, self.mk_imgs, self.fg_mk = \
                             self.netG(fixed_noise, self.c_code)
                     save_img_results(self.imgs_tcpu,
-                                     (self.fake_imgs +
-                                      self.fg_imgs + self.mk_imgs +
-                                      self.fg_mk), self.num_Ds,
-                                     count, self.image_dir,
-                                     self.summary_writer)
+                                    (self.fake_imgs +
+                                    self.fg_imgs + self.mk_imgs +
+                                    self.fg_mk), self.num_Ds,
+                                    count, self.image_dir,
+                                    self.summary_writer)
                     self.netG.train()
                     load_params(self.netG, backup_para)
+                    
+                if(step%10 ==0):
+                    print("finishing step", step)
 
             end_t = time.time()
-            print('''[%d/%d][%d]
-                         Loss_D: %.2f Loss_G: %.2f Time: %.2fs
-                      '''
-                  % (epoch, self.max_epoch, self.num_batches,
-                     errD_total.data[0], errG_total.data[0],
-                     end_t - start_t))
+            
+            #print('''[%d/%d][%d]
+            #             Loss_D: %.2f Loss_G: %.2f Time: %.2fs
+            #          '''
+            #      % (epoch, self.max_epoch, self.num_batches,
+            #         errD_total.data[0], errG_total.data[0],
+            #         end_t - start_t))
 
         save_model(self.netG, avg_param_G, self.netsD, count, self.model_dir)
 
