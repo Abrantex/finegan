@@ -494,12 +494,16 @@ class FineGAN_trainer(object):
 
             end_t = time.time()
             
-            #print('''[%d/%d][%d]
-            #             Loss_D: %.2f Loss_G: %.2f Time: %.2fs
-            #          '''
-            #      % (epoch, self.max_epoch, self.num_batches,
-            #         errD_total.data[0], errG_total.data[0],
-            #         end_t - start_t))
+            #print("err type {} {} ".format(type(errD_total), type(errD_total)))
+
+            #print("err {}  {}".format(errD_total.item(), errD_total.item()))
+
+            print('''[%d/%d][%d]
+                         Loss_D: %.2f Loss_G: %.2f Time: %.2fs
+                      '''
+                  % (epoch, self.max_epoch, self.num_batches,
+                     errD_total.item(), errG_total.item(),
+                     end_t - start_t))
 
         save_model(self.netG, avg_param_G, self.netsD, count, self.model_dir)
 
@@ -619,7 +623,7 @@ class FineGAN_trainer(object):
                              Loss_D: %.2f Loss_G: %.2f Time: %.2fs
                           '''
                       % (count, cfg.TRAIN.HARDNEG_MAX_ITER, self.num_batches,
-                         errD_total.data[0], errG_total.data[0],
+                         errD_total.item(), errG_total.item(),
                          end_t - start_t))
 
             if (count == cfg.TRAIN.HARDNEG_MAX_ITER):
