@@ -1,7 +1,7 @@
 CONFIG_NAME: '3stages'
-DATASET_NAME: 'birds'
-DATA_DIR: '../data/birds'
-SAVE_DIR: '../output/vis'
+DATASET_NAME: 'fish'
+DATA_DIR: '/content/drive/My Drive/tocollab/data/fish'
+SAVE_DIR: '/content/drive/My Drive/tocollab/output_finegan'
 GPU_ID: '0'
 WORKERS: 4
 
@@ -16,7 +16,7 @@ TRAIN:
     FLAG: True
     NET_G: ''  # Specify the generator path to resume training
     NET_D: ''  # Specify the discriminator path to resume training
-    BATCH_SIZE: 3
+    BATCH_SIZE: 20
     MAX_EPOCH: 1
     HARDNEG_MAX_ITER: 1500
     SNAPSHOT_INTERVAL: 4000

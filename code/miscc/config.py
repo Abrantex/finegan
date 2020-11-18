@@ -10,7 +10,7 @@ __C = edict()
 cfg = __C
 
 # Dataset name: flowers, birds
-__C.DATASET_NAME = 'birds'
+__C.DATASET_NAME = 'fish'
 __C.CONFIG_NAME = ''
 __C.DATA_DIR = ''
 __C.SAVE_DIR = ''
@@ -34,7 +34,7 @@ __C.TEST = edict()
 
 # Training options
 __C.TRAIN = edict()
-__C.TRAIN.BATCH_SIZE = 2
+__C.TRAIN.BATCH_SIZE = 20
 __C.TRAIN.BG_LOSS_WT = 10
 __C.TRAIN.VIS_COUNT = 64
 __C.TRAIN.MAX_EPOCH = 1

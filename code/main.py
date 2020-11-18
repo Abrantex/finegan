@@ -14,54 +14,33 @@ import time
 import pickle
 
 #
-from trainer import FineGAN_evaluator as evaluator
 from datasets import Dataset
 from trainer import FineGAN_trainer as trainer
-
-dir_path = (os.path.abspath(os.path.join(os.path.realpath(__file__), './.')))
-sys.path.append(dir_path)
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Train a GAN network')
-    parser.add_argument('--cfg', dest='cfg_file',
-                        help='optional config file',
-                        default='cfg/birds_proGAN.yml', type=str)
-    parser.add_argument('--gpu', dest='gpu_id', type=str, default='-1')
-    parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
-    parser.add_argument('--manualSeed', type=int, help='manual seed')
-    #parser.add_argument('--config_key',dest='config_key', type=str, help='configuration name', default = 'finegan_birds')
-    args = parser.parse_args()
-    return args
+from trainer import FineGAN_evaluator as evaluator
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    if args.cfg_file is not None:
-        cfg_from_file(args.cfg_file)
 
-    if args.gpu_id != '-1':
-        cfg.GPU_ID = args.gpu_id
-    else:
-        cfg.CUDA = False
+    cfg_from_file("train.yml")
 
-    if args.data_dir != '':
-        cfg.DATA_DIR = args.data_dir
+    cfg.GPU_ID = '0'
+
     if cfg.TRAIN.FLAG:
         print('Using config:')
         pprint.pprint(cfg)
 
     if not cfg.TRAIN.FLAG:
-        args.manualSeed = 45
+        manualSeed = 45
         '''
         Change this to have different random seed during evaluation
         '''
-    elif args.manualSeed is None:
-        args.manualSeed = random.randint(1, 10000)
-    random.seed(args.manualSeed)
-    torch.manual_seed(args.manualSeed)
+    else :
+        manualSeed = random.randint(1, 10000)
+    
+    random.seed(manualSeed)
+    torch.manual_seed(manualSeed)
     if cfg.CUDA:
-        torch.cuda.manual_seed_all(args.manualSeed)
+        torch.cuda.manual_seed_all(manualSeed)
 
     # Evaluation part
     if not cfg.TRAIN.FLAG:
@@ -72,7 +51,7 @@ if __name__ == "__main__":
     else:
         now = datetime.datetime.now(dateutil.tz.tzlocal())
         timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-        output_dir = '../output/%s_%s' % \
+        output_dir = '/content/drive/My Drive/tocollab/output_finegan/%s_%s' % \
             (cfg.DATASET_NAME, timestamp)
         pkl_filename = 'cfg.pickle'
 

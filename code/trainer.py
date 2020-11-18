@@ -489,7 +489,7 @@ class FineGAN_trainer(object):
                     self.netG.train()
                     load_params(self.netG, backup_para)
                     
-                if(step%10 ==0):
+                if(step%50 ==0):
                     print("finishing step", step)
 
             end_t = time.time()
@@ -613,14 +613,17 @@ class FineGAN_trainer(object):
                 load_params(self.netG, backup_para)
 
             end_t = time.time()
+  
+            if(step%50 ==0):
+                    print("finishing step", step)
 
-            if (count % 100) == 0:
-                print('''[%d/%d][%d]
-                             Loss_D: %.2f Loss_G: %.2f Time: %.2fs
-                          '''
-                      % (count, cfg.TRAIN.HARDNEG_MAX_ITER, self.num_batches,
-                         errD_total.data[0], errG_total.data[0],
-                         end_t - start_t))
+            #if (count % 100) == 0:
+                #print('''[%d/%d][%d]
+                #             Loss_D: %.2f Loss_G: %.2f Time: %.2fs
+                #          '''
+                #      % (count, cfg.TRAIN.HARDNEG_MAX_ITER, self.num_batches,
+                #         errD_total.data[0], errG_total.data[0],
+                #         end_t - start_t))
 
             if (count == cfg.TRAIN.HARDNEG_MAX_ITER):
                 # Hard negative training complete
