@@ -152,16 +152,16 @@ def define_optimizers(netG, netsD):
     return optimizerG, optimizersD
 
 
-def save_model(netG, avg_param_G, netsD, epoch, model_dir):
+def save_model(netG, avg_param_G, netsD, epoch, model_dir, stage):
     load_params(netG, avg_param_G)
     torch.save(
         netG.state_dict(),
-        '%s/netG_%d.pth' % (model_dir, epoch))
+        '%s/netG_s%d_%d.pth' % (model_dir, stage, epoch))
     for i in range(len(netsD)):
         netD = netsD[i]
         torch.save(
             netD.state_dict(),
-            '%s/netD%d.pth' % (model_dir, i))
+            '%s/netD%d_s%d.pth' % (model_dir, i, stage))
     print('Save G/Ds models.')
 
 
@@ -494,9 +494,10 @@ class FineGAN_trainer(object):
                 count = count + 1
 
                 if count % cfg.TRAIN.SNAPSHOT_INTERVAL == 0:
+                    print("Snapshot of first stage")
                     backup_para = copy_G_params(self.netG)
                     save_model(self.netG, avg_param_G,
-                            self.netsD, count, self.model_dir)
+                            self.netsD, count, self.model_dir, stage=1)
                     # Save images
                     load_params(self.netG, avg_param_G)
                     self.netG.eval()
@@ -526,7 +527,7 @@ class FineGAN_trainer(object):
                      errD_total.item(), errG_total.item(),
                      end_t - start_t))
 
-        save_model(self.netG, avg_param_G, self.netsD, count, self.model_dir)
+        save_model(self.netG, avg_param_G, self.netsD, count, self.model_dir, stage=1)
 
         print("Done with the normal training. Now performing hard negative training..")
         count = 0
@@ -625,9 +626,10 @@ class FineGAN_trainer(object):
             count = count + 1
 
             if count % cfg.TRAIN.SNAPSHOT_INTERVAL_HARDNEG == 0:
+                print("Snapshot of second stage")
                 backup_para = copy_G_params(self.netG)
                 save_model(self.netG, avg_param_G, self.netsD,
-                           count+500000, self.model_dir)
+                           count+500000, self.model_dir, stage=2)
                 load_params(self.netG, avg_param_G)
                 self.netG.eval()
                 with torch.set_grad_enabled(False):
@@ -660,7 +662,7 @@ class FineGAN_trainer(object):
                 # Hard negative training complete
                 break
 
-        save_model(self.netG, avg_param_G, self.netsD, count, self.model_dir)
+        save_model(self.netG, avg_param_G, self.netsD, count, self.model_dir, stage=2)
         self.summary_writer.close()
 
 
