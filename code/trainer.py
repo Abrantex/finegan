@@ -23,9 +23,27 @@ from miscc.config import cfg
 from miscc.utils import mkdir_p
 
 from model import G_NET, D_NET
+import csv
 
 
 # ################## Shared functions ###################
+def log_loss(output_csv_file, epoch, d0_loss, d2_loss, errD_total, errG_total):
+
+    eg_loss_dict = {}
+    eg_loss_dict["d0_loss"] = d0_loss
+    eg_loss_dict["d2_loss"] = d2_loss
+    eg_loss_dict["errD_total"] = errD_total.item()
+    eg_loss_dict["errG_total"] = errG_total.item()
+    eg_loss_dict["epoch"] = epoch
+
+    with open(output_csv_file, 'a') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=["epoch", "d0_loss", "d2_loss", "errD_total", "errG_total"])
+        if(epoch == 0):
+            writer.writeheader()
+        
+        writer.writerow(eg_loss_dict)
+
+
 
 def child_to_parent(child_c_code, classes_child, classes_parent):
 
@@ -185,6 +203,8 @@ class FineGAN_trainer(object):
             mkdir_p(self.image_dir)
             mkdir_p(self.log_dir)
             self.summary_writer = FileWriter(self.log_dir)
+            self.output_negcsv_file = os.path.join(output_dir, 'neg_losses.csv')
+            self.output_csv_file    = os.path.join(output_dir, 'losses.csv')
 
         s_gpus = cfg.GPU_ID.split(',')
         self.gpus = [int(ix) for ix in s_gpus]
@@ -321,17 +341,17 @@ class FineGAN_trainer(object):
                 errD.backward()
                 optD.step()
 
-            '''
+            
             if (flag == 0):
-                summary_D = summary.scalar('D_loss%d' % idx, errD.data[0].item())
+                summary_D = summary.scalar('D_loss%d' % idx, errD.item())
                 self.summary_writer.add_summary(summary_D, count)
                 summary_D_real = summary.scalar(
-                    'D_loss_real_%d' % idx, errD_real.data[0].item())
+                    'D_loss_real_%d' % idx, errD_real.item())
                 self.summary_writer.add_summary(summary_D_real, count)
                 summary_D_fake = summary.scalar(
-                    'D_loss_fake_%d' % idx, errD_fake.data[0].item())
+                    'D_loss_fake_%d' % idx, errD_fake.item())
                 self.summary_writer.add_summary(summary_D_fake, count)
-            '''
+            
             return errD
 
     def train_Gnet(self, count):
@@ -376,17 +396,16 @@ class FineGAN_trainer(object):
             if(i > 0):
                 errG_total = errG_total + errG_info
 
-            '''
+            
             if flag == 0:
                 if i > 0:
                     summary_D_class = summary.scalar(
-                        'Information_loss_%d' % i, errG_info.data[0])
+                        'Information_loss_%d' % i, errG_info.item())
                     self.summary_writer.add_summary(summary_D_class, count)
 
                 if i == 0 or i == 2:
-                    summary_D = summary.scalar('G_loss%d' % i, errG.data[0])
+                    summary_D = summary.scalar('G_loss%d' % i, errG.item())
                     self.summary_writer.add_summary(summary_D, count)
-            '''
         errG_total.backward()
         for myit in range(len(self.netsD)):
             self.optimizerG[myit].step()
@@ -462,6 +481,10 @@ class FineGAN_trainer(object):
                     if i == 0 or i == 2:  # only at parent and child stage
                         errD = self.train_Dnet(i, count)
                         errD_total += errD
+                        if i == 0 :
+                            d0_loss = errD.item()
+                        if i == 2 :
+                            d2_loss = errD.item()
 
                 # Update the Generator networks
                 errG_total = self.train_Gnet(count)
@@ -494,9 +517,7 @@ class FineGAN_trainer(object):
 
             end_t = time.time()
             
-            #print("err type {} {} ".format(type(errD_total), type(errD_total)))
-
-            #print("err {}  {}".format(errD_total.item(), errD_total.item()))
+            log_loss(self.output_csv_file, epoch, d0_loss, d2_loss, errD_total, errG_total)
 
             print('''[%d/%d][%d]
                          Loss_D: %.2f Loss_G: %.2f Time: %.2fs
@@ -591,6 +612,10 @@ class FineGAN_trainer(object):
                     if i == 0 or i == 2:
                         errD = self.train_Dnet(i, count)
                         errD_total += errD
+                        if i == 0:
+                            d0_loss = errD
+                        if i == 2:
+                            d2_loss = errD
 
                 # Update generator network
                 errG_total = self.train_Gnet(count)
@@ -618,7 +643,9 @@ class FineGAN_trainer(object):
 
             end_t = time.time()
 
-            if (count % 100) == 0:
+
+            if (count % 100) == 0 or count <=1:
+                log_loss(self.output_negcsv_file, count-1, d0_loss, d2_loss, errD_total, errG_total)
                 print('''[%d/%d][%d]
                              Loss_D: %.2f Loss_G: %.2f Time: %.2fs
                           '''
