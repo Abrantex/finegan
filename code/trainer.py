@@ -102,15 +102,11 @@ def load_network(gpus):
         netG.load_state_dict(state_dict)
         print('Load ', cfg.TRAIN.NET_G)
 
-        istart = cfg.TRAIN.NET_G.rfind('_') + 1
-        iend = cfg.TRAIN.NET_G.rfind('.')
-        count = cfg.TRAIN.NET_G[istart:iend]
-        count = int(count) + 1
 
     if cfg.TRAIN.NET_D != '':
         for i in range(len(netsD)):
-            print('Load %s_%d.pth' % (cfg.TRAIN.NET_D, i))
-            state_dict = torch.load('%s_%d.pth' % (cfg.TRAIN.NET_D, i))
+            print('Load %s%d.pth' % (cfg.TRAIN.NET_D, i))
+            state_dict = torch.load('%s%d.pth' % (cfg.TRAIN.NET_D, i))
             netsD[i].load_state_dict(state_dict)
 
     if cfg.CUDA:

@@ -44,8 +44,8 @@ __C.TRAIN.SNAPSHOT_INTERVAL_HARDNEG = 500
 __C.TRAIN.DISCRIMINATOR_LR = 2e-4
 __C.TRAIN.GENERATOR_LR = 2e-4
 __C.TRAIN.FLAG = True
-__C.TRAIN.NET_G = ''
-__C.TRAIN.NET_D = ''
+__C.TRAIN.NET_G = '/content/drive/My Drive/tocollab/model2train/netG.pth'
+__C.TRAIN.NET_D = '/content/drive/My Drive/tocollab/model2train/netD'
 
 
 # Modal options
