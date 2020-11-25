@@ -12,7 +12,7 @@ TIED_CODES: False
 
 TRAIN:
     FLAG: False
-    NET_G: '../models/netG/netG_birds.pth'
+    NET_G: '../models/netG_s2_213.pth'
     BATCH_SIZE: 1
 
 

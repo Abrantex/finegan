@@ -682,17 +682,9 @@ class FineGAN_evaluator(object):
             netG = G_NET()
             netG.apply(weights_init)
             netG = torch.nn.DataParallel(netG, device_ids=self.gpus)
-            model_dict = netG.state_dict()
-
-            state_dict = \
-                torch.load(cfg.TRAIN.NET_G,
-                           map_location=lambda storage, loc: storage)
-
-            state_dict = {k: v for k, v in state_dict.items()
-                          if k in model_dict}
-
-            model_dict.update(state_dict)
-            netG.load_state_dict(model_dict)
+            
+            state_dict = torch.load(cfg.TRAIN.NET_G)
+            netG.load_state_dict(state_dict)
             print('Load ', cfg.TRAIN.NET_G)
 
             # Uncomment this to print Generator layers
