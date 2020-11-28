@@ -1,6 +1,6 @@
 CONFIG_NAME: '3stages'
 DATASET_NAME: 'birds'
-DATA_DIR: '../data/birds'
+DATA_DIR: '../data/fish'
 SAVE_DIR: '../output/vis'
 GPU_ID: '0'
 WORKERS: 4
@@ -14,7 +14,7 @@ TREE:
 
 TRAIN:
     FLAG: True
-    NET_G: ''  # Specify the generator path to resume training
+    NET_G: '../models/netG_s2_213.pth'  # Specify the generator path to resume training
     NET_D: ''  # Specify the discriminator path to resume training
     BATCH_SIZE: 3
     MAX_EPOCH: 1
