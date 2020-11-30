@@ -1,5 +1,5 @@
 CONFIG_NAME: '3stages'
-DATASET_NAME: 'birds'
+DATASET_NAME: 'fish'
 DATA_DIR: '../data/fish'
 SAVE_DIR: '../output/vis'
 GPU_ID: '0'

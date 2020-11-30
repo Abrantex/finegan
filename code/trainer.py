@@ -593,6 +593,7 @@ class FineGAN_evaluator(object):
         if cfg.TRAIN.NET_G == '':
             print('Error: the path for model not found!')
         else:
+            
             # Build and load the generator
             netG = G_NET()
             netG.apply(weights_init)
@@ -605,9 +606,13 @@ class FineGAN_evaluator(object):
             # Uncomment this to print Generator layers
             # print(netG)
 
+            Z_LEN = 1
             nz = cfg.GAN.Z_DIM
-            noise = torch.FloatTensor(self.batch_size, nz)
+            noise = torch.FloatTensor(1, nz)
             noise.data.normal_(0, 1)
+
+            #noise[0] = main_noise[0]
+            #noise[1] = main_noise[0]
 
             if cfg.CUDA:
                 netG.cuda()
@@ -615,32 +620,79 @@ class FineGAN_evaluator(object):
 
             netG.eval()
 
-            background_class = cfg.TEST_BACKGROUND_CLASS
-            parent_class = cfg.TEST_PARENT_CLASS
-            child_class = cfg.TEST_CHILD_CLASS
-            bg_code = torch.zeros([self.batch_size, cfg.FINE_GRAINED_CATEGORIES])
-            p_code = torch.zeros([self.batch_size, cfg.SUPER_CATEGORIES])
-            c_code = torch.zeros([self.batch_size, cfg.FINE_GRAINED_CATEGORIES])
+            #background_class = [0]
+            #parent_class = [0 , 5, 8, 10, 14, 19]
+            #child_class = [0, 13, 26, 155, 93]
 
-            for j in range(self.batch_size):
-                bg_code[j][background_class] = 1
-                p_code[j][parent_class] = 1
-                c_code[j][child_class] = 1
 
-            fake_imgs, fg_imgs, mk_imgs, fgmk_imgs = netG(noise, c_code, p_code, bg_code)
+            background_class = [0, 13, 26, 79, 118, 136, 142, 158, 182]        
+            parent_class = [0, 5, 8, 10, 14, 15]
+            child_class = [0, 13, 26]
+
+            # code for 1 and 2 figure
+            '''
+            background_class = [36]
+            parent_class = [0, 5, 8, 10, 14, 15]
+            child_class = [0, 13, 26, 79, 118, 136, 142, 158, 182]
+            '''
+
+            bg_code = torch.zeros([len(background_class), cfg.FINE_GRAINED_CATEGORIES])
+            p_code = torch.zeros([len(parent_class), cfg.SUPER_CATEGORIES])
+            c_code = torch.zeros([len(child_class), cfg.FINE_GRAINED_CATEGORIES])
+
+            for i in range(len(background_class)):
+                bg_code[i][background_class[i]] = 1
+            
+            for i in range(len(parent_class)):
+                p_code[i][parent_class[i]] = 1
+
+            for i in range(len(child_class)):
+                c_code[i][child_class[i]] = 1
+
+            '''
+            #generate codes from random position
+
+            #for example 
+            c_array = [1,3, 55, 19, 30]
+            p_array = [20, 32, 36, 9, 11]
+
+            '''
+
+            #fake_imgs, fg_imgs, mk_imgs, fgmk_imgs = netG(noise, c_code, p_code, bg_code)
             # Forward pass through the generator
 
-            self.save_image(fake_imgs[0][0], self.save_dir, 'background')
-            self.save_image(fake_imgs[1][0], self.save_dir, 'parent_final')
-            self.save_image(fake_imgs[2][0], self.save_dir, 'child_final')
-            self.save_image(fg_imgs[0][0], self.save_dir, 'parent_foreground')
-            self.save_image(fg_imgs[1][0], self.save_dir, 'child_foreground')
-            self.save_image(mk_imgs[0][0], self.save_dir, 'parent_mask')
-            self.save_image(mk_imgs[1][0], self.save_dir, 'child_mask')
-            self.save_image(
-                fgmk_imgs[0][0], self.save_dir, 'parent_foreground_masked')
-            self.save_image(fgmk_imgs[1][0],
-                            self.save_dir, 'child_foreground_masked')
+            for z_i in range(Z_LEN):
+                noise.data.normal_(0, 1)
+                print("z_i", noise)
+                for bg_i in range(len(background_class)):
+                    bg_code = torch.zeros([1, cfg.FINE_GRAINED_CATEGORIES])
+                    bg_code[0][background_class[bg_i]] = 1
+
+                    for p_i in range(len(parent_class)):
+
+                        p_code = torch.zeros([1, cfg.SUPER_CATEGORIES])
+                        p_code[0][parent_class[p_i]] = 1
+
+                        for c_i in range(len(child_class)):
+                        
+                            c_code = torch.zeros([1, cfg.FINE_GRAINED_CATEGORIES])
+                            c_code[0][child_class[c_i]] = 1
+
+                            fake_imgs, fg_imgs, mk_imgs, fgmk_imgs = netG(noise, c_code, p_code, bg_code)
+                            # Forward pass through the generator
+
+                            self.save_image(fake_imgs[0][0], self.save_dir, 'background_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(fake_imgs[1][0], self.save_dir, 'parent_final_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(fake_imgs[2][0], self.save_dir, 'child_final_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(fg_imgs[0][0], self.save_dir, 'parent_foreground_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(fg_imgs[1][0], self.save_dir, 'child_foreground_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(mk_imgs[0][0], self.save_dir, 'parent_mask_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(mk_imgs[1][0], self.save_dir, 'child_mask_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(
+                                fgmk_imgs[0][0], self.save_dir, 'parent_foreground_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            self.save_image(fgmk_imgs[1][0],
+                                            self.save_dir, 'child_foreground_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+
 
     def save_image(self, images, save_dir, iname):
 
