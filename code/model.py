@@ -259,6 +259,7 @@ class G_NET(nn.Module):
         fake_img2_foreground = self.img_net2(h_code2)  # Parent foreground
         fake_img2_mask = self.img_net2_mask(h_code2)  # Parent mask
         ones_mask_p = torch.ones_like(fake_img2_mask)
+        fake_img2_mask = ones_mask_p - fake_img2_mask
         opp_mask_p = ones_mask_p - fake_img2_mask
         fg_masked2 = torch.mul(fake_img2_foreground, fake_img2_mask)
         fg_mk.append(fg_masked2)
@@ -281,6 +282,12 @@ class G_NET(nn.Module):
         fake_imgs.append(fake_img3_final)
         fg_imgs.append(fake_img3_foreground)
         mk_imgs.append(fake_img3_mask)
+
+        
+        
+        fg_mk.append(bg_masked2) #parent bg_masked
+        #fg_mk.append(bg_masked2) #parent bg_masked
+        fg_mk.append(opp_mask_p) # parent inverse masked
 
         return fake_imgs, fg_imgs, mk_imgs, fg_mk
 

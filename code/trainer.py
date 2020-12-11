@@ -598,15 +598,26 @@ class FineGAN_evaluator(object):
             netG = G_NET()
             netG.apply(weights_init)
             netG = torch.nn.DataParallel(netG, device_ids=self.gpus)
-            
+            model_dict = netG.state_dict()
+
+            '''
+            state_dict = \
+                torch.load(cfg.TRAIN.NET_G,
+                           map_location=lambda storage, loc: storage)
+
+            state_dict = {k: v for k, v in state_dict.items()
+                          if k in model_dict}
+            '''
+
             state_dict = torch.load(cfg.TRAIN.NET_G)
-            netG.load_state_dict(state_dict)
+            model_dict.update(state_dict)
+            netG.load_state_dict(model_dict)
             print('Load ', cfg.TRAIN.NET_G)
 
             # Uncomment this to print Generator layers
             # print(netG)
 
-            Z_LEN = 1
+            Z_LEN = 4
             nz = cfg.GAN.Z_DIM
             noise = torch.FloatTensor(1, nz)
             noise.data.normal_(0, 1)
@@ -624,17 +635,26 @@ class FineGAN_evaluator(object):
             #parent_class = [0 , 5, 8, 10, 14, 19]
             #child_class = [0, 13, 26, 155, 93]
 
-
+            '''
             background_class = [0, 13, 26, 79, 118, 136, 142, 158, 182]        
             parent_class = [0, 5, 8, 10, 14, 15]
             child_class = [0, 13, 26]
-
+            '''
             # code for 1 and 2 figure
-            '''
-            background_class = [36]
+            
+            background_class = [0, 36]
             parent_class = [0, 5, 8, 10, 14, 15]
-            child_class = [0, 13, 26, 79, 118, 136, 142, 158, 182]
-            '''
+            child_class = [0, 13, 26, 125]
+
+            #peixes
+            background_class = [0, 36]
+            parent_class = [0, 5, 14]
+            child_class = [125, 13]
+
+            background_class = [0]
+            parent_class = [5]
+            child_class = [0]
+            
 
             bg_code = torch.zeros([len(background_class), cfg.FINE_GRAINED_CATEGORIES])
             p_code = torch.zeros([len(parent_class), cfg.SUPER_CATEGORIES])
@@ -681,17 +701,35 @@ class FineGAN_evaluator(object):
                             fake_imgs, fg_imgs, mk_imgs, fgmk_imgs = netG(noise, c_code, p_code, bg_code)
                             # Forward pass through the generator
 
-                            self.save_image(fake_imgs[0][0], self.save_dir, 'background_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(fake_imgs[1][0], self.save_dir, 'parent_final_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(fake_imgs[2][0], self.save_dir, 'child_final_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(fg_imgs[0][0], self.save_dir, 'parent_foreground_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(fg_imgs[1][0], self.save_dir, 'child_foreground_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(mk_imgs[0][0], self.save_dir, 'parent_mask_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(mk_imgs[1][0], self.save_dir, 'child_mask_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(
-                                fgmk_imgs[0][0], self.save_dir, 'parent_foreground_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
-                            self.save_image(fgmk_imgs[1][0],
-                                            self.save_dir, 'child_foreground_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                            if z_i ==3:
+                                self.save_image(fake_imgs[0][0], self.save_dir, 'background_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(fake_imgs[1][0], self.save_dir, 'parent_final_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(fake_imgs[2][0], self.save_dir, 'child_final_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(fg_imgs[0][0], self.save_dir, 'parent_foreground_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(fg_imgs[1][0], self.save_dir, 'child_foreground_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(mk_imgs[0][0], self.save_dir, 'parent_mask_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(mk_imgs[1][0], self.save_dir, 'child_mask_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(
+                                    fgmk_imgs[0][0], self.save_dir, 'parent_foreground_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                self.save_image(fgmk_imgs[1][0],
+                                                self.save_dir, 'child_foreground_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                
+                                self.save_image(fgmk_imgs[2][0],
+                                                self.save_dir, 'backgroundMasked') #background_masked
+                                
+                                print("3 size", fgmk_imgs[3].size())
+                                print("2 size", fgmk_imgs[2].size())
+                                
+
+                                self.save_image(fgmk_imgs[3][0],
+                                                self.save_dir, 'inverse_mask') #background_masked
+
+                                
+
+                                
+                                #self.save_image(fgmk_imgs[1][0],self.save_dir, 'parent_background_masked_z%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
+                                #self.save_image(fgmk_imgs[3][0],
+                                #                self.save_dir, 'parent_inverse_masked%s_bg%s_p%s_c%s' % (z_i,bg_i,p_i,c_i))
 
 
     def save_image(self, images, save_dir, iname):

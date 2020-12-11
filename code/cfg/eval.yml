@@ -1,5 +1,5 @@
-DATASET_NAME: 'birds'
-SAVE_DIR: '../output/'
+DATASET_NAME: 'fish'
+SAVE_DIR: '../output_without_inverse/'
 GPU_ID: '3'
 WORKERS: 1  # 4
 
